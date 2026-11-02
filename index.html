@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src https://api.github.com https://*.githubusercontent.com https://*.blob.core.windows.net; img-src 'self' data: blob: https://avatars.githubusercontent.com; worker-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta name="referrer" content="no-referrer">
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#171515">
+<meta name="application-name" content="Zip to Git">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512.png">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<title>Zip to Git</title>
+<link rel="stylesheet" href="./style.css">
+<script src="./jszip.min.js"></script>
+</head>
+<body>
+<svg width="0" height="0" class="svgh" aria-hidden="true">
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></symbol>
+<symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6zM14 3v5h5"/></symbol>
+<symbol id="i-git" viewBox="0 0 24 24"><circle cx="6" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><path d="M6 3v12M18 9a9 9 0 0 1-9 9"/></symbol>
+<symbol id="i-box" viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></symbol>
+<symbol id="i-book" viewBox="0 0 24 24"><path d="M2 4h7a3 3 0 0 1 3 3v14a2 2 0 0 0-2-2H2zM22 4h-7a3 3 0 0 0-3 3v14a2 2 0 0 1 2-2h8z"/></symbol>
+<symbol id="i-up" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></symbol>
+<symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v12M7 11l5 5 5-5M4 20h16"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+<symbol id="i-zip" viewBox="0 0 24 24"><path d="M3 4h18v4H3zM5 8v12h14V8M10 12h4"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM9 12l2 2 4-4"/></symbol>
+<symbol id="i-sync" viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2 6M20 5v6h-6"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></symbol>
+<symbol id="i-move" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+<symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></symbol>
+<symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+<symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
+<symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3l10 18H2zM12 10v5M12 18v.5"/></symbol>
+<symbol id="i-fplus" viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6zM14 3v5h5M12 11v6M9 14h6"/></symbol>
+<symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.5M3 12h.5M3 18h.5"/></symbol>
+</svg>
+<div id="sh"></div><div id="toast"></div>
+<div id="off"><img src="./offline.jpg" alt="No internet connection"><button class="btn" data-act="offretry"><svg class="ic"><use href="#i-sync"/></svg><span data-h="दोबारा कोशिश करो">Try again</span></button></div>
+<div id="lv" data-act="gohome"><div class="rowc"><svg class="ic"><use href="#i-up"/></svg><span id="lvt">…</span></div><div class="bar"><i id="lvb"></i></div></div>
+
+<header><div class="logo">Zip2<b>Git</b></div><button class="btn g langb" data-act="lang"><svg class="ic"><use href="#i-globe"/></svg><span id="lb">EN | हिं</span></button></header>
+
+<main class="wrap">
+<!-- HOME -->
+<section class="view on" id="v-home">
+ <div class="hero"><h1 data-h="ZIP या फ़ाइलें GitHub पर डालो, फिर APK या वेबसाइट बनाओ">Push a ZIP or files to GitHub, then build your APK or website</h1>
+  <div class="chips"><span class="chip"><svg class="ic"><use href="#i-file"/></svg><span id="sF">0</span></span><span class="chip"><svg class="ic"><use href="#i-shield"/></svg><span id="cs">—</span></span></div>
+  <div class="r"><a class="btn g" href="#guide"><svg class="ic"><use href="#i-book"/></svg><span data-h="स्टेप-बाय-स्टेप गाइड">Step-by-step guide</span></a></div></div>
+
+ <div class="card" id="c1"><h2><span class="num">1</span><span data-h="GitHub से जुड़ो">Connect GitHub</span></h2>
+  <p data-h="टोकन सिर्फ़ मेमोरी में रहता है और कभी दिखता नहीं। चाहो तो पासवर्ड से एनक्रिप्ट करके इसी फ़ोन में सेव करो। बिना पासवर्ड Repo और Build देखे नहीं जा सकते।">Your token stays in memory only and is never shown again. Optionally save it encrypted with a password on this phone. Repo and Build stay locked without the password.</p>
+  <label data-h="GitHub टोकन">GitHub token</label><input type="password" id="tk" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="ghp_… / github_pat_…">
+  <label data-h="पासवर्ड (8+ अक्षर)">Password (8+ characters)</label><input type="password" id="pw" autocomplete="off" placeholder="••••••••">
+  <div class="chk"><input type="checkbox" id="rem"><span data-h="पासवर्ड से एनक्रिप्ट करके इस फ़ोन में सेव करो">Save encrypted with password on this phone</span></div>
+  <div class="r"><button class="btn" data-act="connect"><svg class="ic"><use href="#i-shield"/></svg><span data-h="जुड़ो">Connect</span></button><button class="btn g" data-act="unlock"><svg class="ic"><use href="#i-lock"/></svg><span data-h="अनलॉक">Unlock</span></button></div>
+ </div>
+ <div class="card hide" id="c1b"><div class="rowc14"><img id="av" class="av hide" alt="" referrerpolicy="no-referrer"><div class="f1"><small data-h="GitHub से जुड़ा है">GitHub connected</small><h3 id="un">@user</h3></div></div>
+  <div class="r"><button class="btn g" data-act="lock"><svg class="ic"><use href="#i-lock"/></svg><span data-h="लॉक करो">Lock now</span></button><button class="btn g" data-act="forget"><svg class="ic"><use href="#i-x"/></svg><span data-h="डिस्कनेक्ट">Disconnect</span></button></div></div>
+
+ <div class="card"><h2><span class="num">2</span><span data-h="ZIP अपलोड करो">Upload your ZIP</span></h2>
+  <div class="drop" data-act="pickzip"><svg class="ic"><use href="#i-zip"/></svg><b data-h="ZIP फ़ाइल चुनने के लिए यहाँ टैप करो">Tap here to choose your ZIP file</b><small data-h="फ़ोन की Files / Downloads से चुनो">Pick it from your phone Files / Downloads</small></div>
+  <p id="zs" class="mt12"></p>
+  <div class="r"><a class="btn g" href="#files"><svg class="ic"><use href="#i-folder"/></svg><span data-h="फ़ोल्डर और फ़ाइलें देखो">View folders and files</span></a></div>
+ </div>
+
+ <div class="card"><h2><span class="num">3</span><span data-h="रिपॉज़िटरी चुनो">Choose repository</span></h2>
+  <div class="seg"><button id="sOld" class="on" data-act="setold" data-h="मौजूदा चुनो">Select existing</button><button id="sNew" data-act="setnew" data-h="नई बनाओ">Create new</button></div>
+  <div id="pOld"><label data-h="किसमें पुश करना है?">Push into which repo?</label><select id="rs"><option>—</option></select>
+   <div class="r"><button class="btn g" data-act="loadrepos"><svg class="ic"><use href="#i-sync"/></svg><span data-h="लिस्ट ताज़ा करो">Refresh list</span></button></div></div>
+  <div id="pNew" class="hide"><label data-h="रिपॉज़िटरी का नाम">Repository name</label><input type="text" id="rn" placeholder="my-website-project" autocapitalize="off" autocomplete="off">
+   <label data-h="विवरण (वैकल्पिक)">Description (optional)</label><input type="text" id="rd" placeholder="Source code uploaded via Zip2Git">
+   <label data-h="प्राइवेसी">Privacy</label><select id="rv"><option value="0" data-h="पब्लिक (Vercel/Cloudflare पर फ्री डिप्लॉय)">Public (free deploy on Vercel/Cloudflare)</option><option value="1" data-h="प्राइवेट">Private</option></select></div>
+  <label data-h="ब्रांच">Branch</label><input type="text" id="br" value="main" autocapitalize="off" autocomplete="off">
+  <div class="chk"><input type="checkbox" id="mir"><span data-h="मिरर: मेरी लिस्ट में न होने वाली पुरानी फ़ाइलें हटाओ">Mirror: delete repo files not in my list</span></div>
+ </div>
+
+ <div class="card"><h2><span class="num">4</span><span data-h="GitHub पर पुश करो">Push to GitHub</span></h2>
+  <p data-h="एक बार दबाओ। पुश चलता रहेगा, तुम दूसरे पेज पर जा सकते हो। स्क्रीन ऑन रहती है। ऐप या ब्राउज़र बंद मत करना।">Press once. The push keeps running while you use other pages. The screen stays awake. Do not close the app or browser.</p>
+  <button class="btn w" id="pb" data-act="push"><svg class="ic"><use href="#i-up"/></svg><span data-h="सारी फ़ाइलें पुश करो">PUSH ALL FILES</span></button>
+  <div class="bar"><i id="pg"></i></div><p id="pt" class="mt8">0%</p><div id="m3"></div><div id="lg"></div><div class="r" id="lk"></div>
+ </div>
+</section>
+
+<!-- FILES -->
+<section class="view" id="v-files">
+ <div class="card"><h2><svg class="ic"><use href="#i-plus"/></svg><span data-h="फ़ाइलें जोड़ो">Add files</span></h2>
+  <p data-h="पहले जाने की जगह (फ़ोल्डर) चुनो, फिर ZIP, फ़ाइलें या फ़ोल्डर जोड़ो। 1000+ फ़ाइलें एक साथ चलती हैं।">Choose the destination folder first, then add a ZIP, files or a folder. 1000+ files at once is fine.</p>
+  <label data-h="जाने की जगह (खाली = रूट)">Destination folder (empty = root)</label><input type="text" id="dest" placeholder="app/src/main/res/drawable" autocapitalize="off" autocomplete="off">
+  <div class="r g8" id="chipsB"></div>
+  <div class="chk"><input type="checkbox" id="strip" checked><span data-h="ऊपर का अकेला फ़ोल्डर हटा दो">Remove single top-level folder</span></div>
+  <div class="r"><button class="btn" data-act="pickzip"><svg class="ic"><use href="#i-zip"/></svg>ZIP</button><button class="btn g" data-act="pickfiles"><svg class="ic"><use href="#i-file"/></svg><span data-h="फ़ाइलें">Files</span></button><button class="btn g" data-act="pickdir"><svg class="ic"><use href="#i-folder"/></svg><span data-h="फ़ोल्डर">Folder</span></button></div>
+  <input type="file" id="zf" accept=".zip" hidden><input type="file" id="ff" multiple hidden><input type="file" id="df" webkitdirectory multiple hidden>
+ </div>
+ <div class="card"><h2><svg class="ic"><use href="#i-folder"/></svg><span data-h="तुम्हारे फ़ोल्डर और फ़ाइलें">Your folders and files</span></h2>
+  <p data-h="फ़ोल्डर पर टैप करो तो अंदर जाओगे। फ़ाइल पर टैप करो तो पढ़ सकते हो, पाथ बदल सकते हो या डाउनलोड कर सकते हो।">Tap a folder to open it. Tap a file to read it, change its path or download it.</p>
+  <div class="cr" id="fc"></div><div id="fl"></div>
+  <div class="r"><button class="btn g" data-act="zipdir"><svg class="ic"><use href="#i-down"/></svg><span data-h="यह फ़ोल्डर ZIP">This folder ZIP</span></button><button class="btn g" data-act="zipall"><svg class="ic"><use href="#i-down"/></svg><span data-h="सब ZIP">All ZIP</span></button><button class="btn g" data-act="clearall"><svg class="ic"><use href="#i-trash"/></svg><span data-h="साफ़ करो">Clear</span></button></div></div>
+</section>
+
+<!-- REPO -->
+<section class="view" id="v-repo">
+ <div class="card gate" data-gate="repo"><svg class="ic"><use href="#i-lock"/></svg><h2 class="gt"><span data-h="लॉक है">Locked</span></h2><p class="gm"></p>
+  <div class="gf hide"><input type="password" class="gpw" autocomplete="off" placeholder="••••••••" aria-label="Password"><div class="r"><button class="btn" data-act="gunlock"><svg class="ic"><use href="#i-lock"/></svg><span data-h="अनलॉक">Unlock</span></button></div></div>
+  <div class="r gh2"><a class="btn g" href="#home"><svg class="ic"><use href="#i-home"/></svg><span data-h="Home पर जाओ">Go to Home</span></a></div></div>
+ <div class="gated">
+ <div class="card"><h2><svg class="ic"><use href="#i-git"/></svg><span data-h="रिपॉज़िटरी मैनेजर">Repo manager</span></h2>
+  <p><span data-h="रिपॉज़िटरी:">Repo:</span> <span class="rl">—</span></p>
+  <p data-h="देखो, एडिट करो, डिलीट करो, फ़ोल्डर बदलो, नई फ़ाइलें जोड़ो। सारे बदलाव पहले लिस्ट में जुड़ते हैं, फिर एक बार में पुश होते हैं।">View, edit, delete, rename folders and add new files. All changes are collected first, then pushed together in one commit.</p>
+  <div class="r"><button class="btn" data-act="loadrepo"><svg class="ic"><use href="#i-sync"/></svg><span data-h="लोड करो">Load repo</span></button></div>
+  <div class="cr" id="rc"></div>
+  <div class="r g8 hide" id="rt"><button class="tag" data-act="rff">＋ <span data-h="फ़ाइलें">Files</span></button><button class="tag" data-act="rzf">＋ ZIP</button><button class="tag" data-act="rdf">＋ <span data-h="फ़ोल्डर">Folder</span></button><button class="tag" data-act="newfile">＋ <span data-h="नई फ़ाइल">New file</span></button><button class="tag" data-act="fromstaged">＋ <span data-h="Files टैब से">From Files tab</span></button></div>
+  <div class="chk hide" id="rsw"><input type="checkbox" id="rstrip" checked><span data-h="ZIP का अकेला ऊपरी फ़ोल्डर हटाओ">Remove single top-level folder of ZIP</span></div>
+  <input type="file" id="rzfi" accept=".zip" hidden><input type="file" id="rffi" multiple hidden><input type="file" id="rdfi" webkitdirectory multiple hidden>
+  <div id="rl" class="mt8"></div>
+  <div class="pend hide" id="pend"><b id="pn"></b>
+   <label data-h="कमिट मैसेज (वैकल्पिक)">Commit message (optional)</label><input type="text" id="cmsg" autocomplete="off" placeholder="Update via Zip2Git">
+   <div class="r"><button class="btn" data-act="rpush"><svg class="ic"><use href="#i-up"/></svg><span data-h="बदलाव पुश करो">Push changes</span></button></div>
+   <div class="r"><button class="btn g sm" data-act="rreview"><svg class="ic"><use href="#i-list"/></svg><span data-h="देखो">Review</span></button><button class="btn g sm" data-act="rdiscard"><svg class="ic"><use href="#i-x"/></svg><span data-h="रद्द करो">Discard</span></button></div></div>
+  <div id="m5"></div>
+ </div>
+ <div class="card"><h2><svg class="ic"><use href="#i-alert"/></svg><span data-h="ख़तरे वाली जगह">Danger zone</span></h2>
+  <p data-h="पूरी रिपॉज़िटरी हमेशा के लिए डिलीट होती है। इसके लिए टोकन में delete_repo परमिशन चाहिए।">Deletes the whole repository forever. The token needs the delete_repo permission.</p>
+  <div class="r"><button class="btn d" data-act="delrepo"><svg class="ic"><use href="#i-trash"/></svg><span data-h="पूरी रिपो डिलीट करो">Delete whole repo</span></button></div></div>
+ </div>
+</section>
+
+<!-- BUILD -->
+<section class="view" id="v-build">
+ <div class="card gate" data-gate="build"><svg class="ic"><use href="#i-lock"/></svg><h2 class="gt"><span data-h="लॉक है">Locked</span></h2><p class="gm"></p>
+  <div class="gf hide"><input type="password" class="gpw" autocomplete="off" placeholder="••••••••" aria-label="Password"><div class="r"><button class="btn" data-act="gunlock"><svg class="ic"><use href="#i-lock"/></svg><span data-h="अनलॉक">Unlock</span></button></div></div>
+  <div class="r gh2"><a class="btn g" href="#home"><svg class="ic"><use href="#i-home"/></svg><span data-h="Home पर जाओ">Go to Home</span></a></div></div>
+ <div class="gated">
+ <div class="card"><h2><svg class="ic"><use href="#i-box"/></svg><span data-h="बिल्ड वर्कफ़्लो">Build workflows</span></h2>
+  <p><span data-h="रिपॉज़िटरी:">Repo:</span> <span class="rl">—</span></p>
+  <p data-h="वर्कफ़्लो रिपो में जोड़ो और चलाओ। APK और AAB GitHub Release में सीधे मिलेंगे (ZIP नहीं)। फेल हो तो कारण यहाँ और GitHub दोनों जगह दिखेगा।">Add the workflow to your repo and run it. APK and AAB land in a GitHub Release as plain files (not zips). If it fails, the cause is shown here and on GitHub.</p>
+  <label data-h="क्या बनाना है?">What do you want to build?</label><select id="wk"><option value="android" data-h="Android APK + AAB">Android APK + AAB</option><option value="pages" data-h="वेबसाइट (GitHub Pages)">Website (GitHub Pages)</option><option value="all" data-h="तीनों: APK + AAB + Pages">All three: APK + AAB + Pages</option></select>
+  <div id="wtw"><label data-h="Android प्रोजेक्ट का प्रकार">Android project type</label><select id="wt"></select></div>
+  <textarea id="yml" readonly class="mt14"></textarea>
+  <div class="r"><button class="btn g" data-act="copyyml"><svg class="ic"><use href="#i-copy"/></svg><span data-h="कॉपी">Copy</span></button><button class="btn" data-act="addwf"><svg class="ic"><use href="#i-plus"/></svg><span data-h="रिपो में जोड़ो">Add to repo</span></button></div>
+  <div class="r"><button class="btn" data-act="runwf"><svg class="ic"><use href="#i-play"/></svg><span data-h="चलाओ">Run</span></button><button class="btn g" data-act="status"><svg class="ic"><use href="#i-sync"/></svg><span data-h="स्टेटस">Status</span></button></div><div id="m4"></div></div>
+ <div id="res"></div>
+ </div>
+</section>
+
+<!-- GUIDE -->
+<section class="view" id="v-guide">
+ <div class="r mb14"><a class="btn g" href="#home"><svg class="ic"><use href="#i-back"/></svg><span data-h="वापस Home">Back to Home</span></a></div>
+ <div id="gd"></div>
+ <div class="card"><h2><svg class="ic"><use href="#i-shield"/></svg><span data-h="सुरक्षा">Security</span></h2><p id="sec"></p></div>
+</section>
+</main>
+
+<nav>
+ <a href="#home" data-v="home"><span class="ib"><svg class="ic"><use href="#i-home"/></svg></span><span data-h="होम">Home</span></a>
+ <a href="#files" data-v="files"><span class="ib"><svg class="ic"><use href="#i-folder"/></svg></span><span data-h="फ़ाइलें">Files</span></a>
+ <a href="#repo" data-v="repo"><span class="ib"><svg class="ic"><use href="#i-git"/></svg></span><span data-h="रिपो">Repo</span></a>
+ <a href="#build" data-v="build"><span class="ib"><svg class="ic"><use href="#i-box"/></svg></span><span data-h="बिल्ड">Build</span></a>
+</nav>
+<script src="./app.js"></script>
+</body>
+</html>
