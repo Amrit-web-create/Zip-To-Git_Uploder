@@ -48,7 +48,7 @@ function onRepo(){const o=$('rs').selectedOptions[0];if(o&&o.dataset.b)$('br').v
 /* ---------- token: memory only + optional encrypted vault + locking ---------- */
 function setConn(){const on=!!TOK;$('cs').textContent=on?'@'+USER:(LS.g('z2g_v')?T('Locked','लॉक'):T('Not connected','जुड़ा नहीं'));$('c1').classList.toggle('hide',on);$('c1b').classList.toggle('hide',!on);$('un').textContent='@'+USER}
 function refreshGates(){const has=!!TOK,vault=!!LS.g('z2g_v');document.querySelectorAll('.gated').forEach(n=>n.classList.toggle('hide',!has));document.querySelectorAll('[data-gate]').forEach(g=>{g.classList.toggle('hide',has);g.querySelector('.gm').textContent=vault?T('Enter your password to view this page.','यह पेज देखने के लिए पासवर्ड डालो।'):T('Not connected. Connect GitHub on Home first.','जुड़े नहीं हैं। पहले Home पर GitHub से जुड़ो।');g.querySelector('.gf').classList.toggle('hide',!vault);g.querySelector('.gh2').classList.toggle('hide',vault)})}
-function lock(msg){TOK=null;USER='';TREE=null;PEND.clear();POLL++;RKEY='';['rl','rc','res','m4','m5'].forEach(i=>$(i).replaceChildren());$('rs').replaceChildren();$('av').classList.add('hide');$('sh').classList.remove('on');$('sh').replaceChildren();$('rt').classList.add('hide');$('rsw').classList.add('hide');$('pend').classList.add('hide');setConn();refreshGates();updLbl();if(msg)toast(msg)}
+function lock(msg){TOK=null;USER='';TREE=null;PEND.clear();POLL++;RKEY='';$('rprog').classList.add('hide');['rl','rc','res','m4','m5'].forEach(i=>$(i).replaceChildren());$('rs').replaceChildren();$('av').classList.add('hide');$('sh').classList.remove('on');$('sh').replaceChildren();$('rt').classList.add('hide');$('rsw').classList.add('hide');$('pend').classList.add('hide');setConn();refreshGates();updLbl();if(msg)toast(msg)}
 function bump(){clearTimeout(idleT);if(TOK)idleT=setTimeout(()=>{if(PUSHING)return bump();lock(T('Auto-locked after 5 min idle.','5 मिनट खाली रहने पर ऑटो-लॉक हो गया।'))},3e5)}
 ['click','keydown','touchstart'].forEach(e=>addEventListener(e,bump,{passive:true}));
 document.addEventListener('visibilitychange',()=>{if(document.hidden){hideT=setTimeout(()=>{if(TOK&&!PUSHING)lock(T('Locked while app was in background.','ऐप बैकग्राउंड में था, इसलिए लॉक हो गया।'))},12e4)}else{clearTimeout(hideT);if(PUSHING){WL=null;awake(true)}}});
@@ -102,11 +102,13 @@ const u2b=u=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result.sp
 async function buildEntry(repo,list,onP){const tree=[],bins=[];
  for(const [p,u,mode] of list){const t=u.length?(u.length<=1e6?asText(u):null):'';if(t!==null)tree.push({path:p,mode,type:'blob',content:t});else{if(u.length>95e6)throw new Error(B(p+': file is over 95 MB, GitHub rejects it.',p+': फ़ाइल 95 MB से बड़ी है, GitHub मना करता है।'));bins.push([p,u,mode])}}
  let q=0,done=0;const work=async()=>{while(q<bins.length){const [p,u,mode]=bins[q++];const b=await gh(`/repos/${repo}/git/blobs`,{method:'POST',body:JSON.stringify({content:await u2b(u),encoding:'base64'})});tree.push({path:p,mode,type:'blob',sha:b.sha});done++;onP&&onP(done/Math.max(bins.length,1))}};
- await Promise.all([work(),work(),work(),work(),work(),work()]);return[tree,bins.length]}
-async function chainTrees(repo,base,tree,onP){const chunks=[];let cur=[],sz=0;for(const e of tree){const s=(e.content||'').length+200;if(cur.length&&(cur.length>=150||sz+s>3e6)){chunks.push(cur);cur=[];sz=0}cur.push(e);sz+=s}if(cur.length)chunks.push(cur);
+ await Promise.all(Array.from({length:8},work));return[tree,bins.length]}
+async function chainTrees(repo,base,tree,onP){const chunks=[];let cur=[],sz=0;for(const e of tree){const s=(e.content||'').length+200;if(cur.length&&(cur.length>=(e.content!==undefined?150:500)||sz+s>3e6)){chunks.push(cur);cur=[];sz=0}cur.push(e);sz+=s}if(cur.length)chunks.push(cur);
  let prev=base;for(let i=0;i<chunks.length;i++){const b={tree:chunks[i]};if(prev)b.base_tree=prev;prev=(await gh(`/repos/${repo}/git/trees`,{method:'POST',body:JSON.stringify(b)})).sha;onP&&onP((i+1)/chunks.length)}return prev}
 const modeOf=p=>/(^|\/)gradlew$|\.sh$/.test(p)?'100755':'100644';
 /* ---------- push from Home ---------- */
+function tickMsg(t){const m=el('div','msg ok okrow'),k=el('span','tick');k.appendChild(ic('check'));m.append(k,el('span','',t));return m}
+function rp(p){$('rpg').style.width=p+'%';$('rpt').textContent=Math.round(p)+'%';$('lvb').style.width=p+'%';$('lvt').textContent=T('Pushing… ','पुश हो रहा है… ')+Math.round(p)+'%'}
 function pr(p){$('pg').style.width=p+'%';$('pt').textContent=Math.round(p)+'%';$('lvb').style.width=p+'%';$('lvt').textContent=T('Pushing… ','पुश हो रहा है… ')+Math.round(p)+'%';document.title=PUSHING?Math.round(p)+'% · Zip2Git':'Zip2Git'}
 async function awake(on){try{if(on&&!WL)WL=await navigator.wakeLock.request('screen');else if(!on&&WL){await WL.release();WL=null}}catch(e){}}
 addEventListener('beforeunload',e=>{if(PUSHING){e.preventDefault();e.returnValue=''}});
@@ -125,7 +127,7 @@ async function push(){
   const prev=await chainTrees(repo,$('mir').checked?null:base,tree,f=>{pr(58+f*30)});
   const c=await gh(`/repos/${repo}/git/commits`,{method:'POST',body:JSON.stringify({message:`Deploy via Zip2Git (${FILES.size} files)`,tree:prev,parents:[parent]})});pr(94);
   if(exists)await gh(`/repos/${repo}/git/refs/heads/${encP(br)}`,{method:'PATCH',body:JSON.stringify({sha:c.sha,force:$('mir').checked})});else await gh(`/repos/${repo}/git/refs`,{method:'POST',body:JSON.stringify({ref:'refs/heads/'+br,sha:c.sha})});
-  PUSHING=false;pr(100);lg('SUCCESS ✓ '+FILES.size);const m=el('div','msg ok');m.textContent=T('Pushed successfully! ','पुश सफल रहा! ')+repo+' · '+br;$('m3').appendChild(m);
+  PUSHING=false;pr(100);lg('SUCCESS ✓ '+FILES.size);$('m3').appendChild(tickMsg(T('Pushed successfully! ','पुश सफल रहा! ')+repo+' · '+br));
   const url='https://github.com/'+repo;linkBtn(T('Open repo','रिपो खोलो'),url+'/tree/'+br,'link');linkBtn('Vercel','https://vercel.com/new/clone?repository-url='+encodeURIComponent(url),'up');linkBtn('Netlify','https://app.netlify.com/start/deploy?repository='+encodeURIComponent(url),'up');
   toast(T('Push complete ✓','पुश पूरा ✓'));if(MODE==='new'){await loadRepos();$('rs').value=repo;setMode('old')}
  }catch(e){const t=eText(e);lg(t);const m=el('div','msg');m.textContent=t;$('m3').appendChild(m);toast(t,1)}finally{PUSHING=false;$('lv').style.display='none';document.title='Zip2Git';$('pb').disabled=false;awake(false)}}
@@ -133,7 +135,7 @@ async function push(){
 function resetRepo(){TREE=null;PEND.clear();RD='';RKEY='';renderRepo()}
 async function blobOf(sha,r){const b=await gh(`/repos/${r}/git/blobs/${sha}`);return ub(b.content.replace(/\n/g,''))}
 async function loadRepo(){const r=repoFull(),br=brVal();toast(T('Loading…','लोड हो रहा है…'));
- const ref=await gh(`/repos/${r}/git/ref/heads/${encP(br)}`),c=await gh(`/repos/${r}/git/commits/${ref.object.sha}`),t=await gh(`/repos/${r}/git/trees/${c.tree.sha}?recursive=1`);
+ const t=await gh(`/repos/${r}/git/trees/${encP(br)}?recursive=1`);
  TREE=new Map();t.tree.forEach(x=>{if(x.type==='blob')TREE.set(x.path,{sha:x.sha,size:x.size||0,mode:x.mode})});PEND.clear();RD='';RKEY=r+'@'+br;renderRepo();
  if(t.truncated)toast(T('Repo is very large, list may be incomplete.','रिपो बहुत बड़ी है, लिस्ट अधूरी हो सकती है।'),1)}
 function eff(){const m=new Map();if(TREE)TREE.forEach((v,p)=>m.set(p,v));PEND.forEach((v,p)=>{if(v.del)m.delete(p);else m.set(p,{sha:v.sha,size:v.data?v.data.length:v.size,mode:v.mode||'100644',pend:1,data:v.data})});return m}
@@ -161,15 +163,15 @@ function newFile(){const n=prompt(T('New file name (inside '+(RD||'/')+')','न�
 function updPend(){const n=PEND.size;$('pend').classList.toggle('hide',!n);$('pn').textContent=T(n+' changes waiting to be pushed',n+' बदलाव पुश के इंतज़ार में')}
 function review(){const l=[];PEND.forEach((v,p)=>l.push((v.del?'− ':TREE&&TREE.has(p)?'✎ ':'＋ ')+p));sheet(T('Pending changes','बदलाव'),l.length+'',l.sort().join('\n'),[])}
 async function rpush(){if(PUSHING)return;if(!PEND.size)return toast(T('No changes.','कोई बदलाव नहीं।'));const r=repoFull(),br=brVal();if(r+'@'+br!==RKEY)throw new Error(B('Repo or branch changed. Load the repo again.','रिपो या ब्रांच बदल गई। रिपो दोबारा लोड करो।'));
- PUSHING=true;awake(true);$('m5').replaceChildren();toast(T('Pushing changes…','बदलाव पुश हो रहे हैं…'));
- try{const ref=await gh(`/repos/${r}/git/ref/heads/${encP(br)}`),parent=ref.object.sha,base=(await gh(`/repos/${r}/git/commits/${parent}`)).tree.sha;
+ PUSHING=true;awake(true);$('m5').replaceChildren();$('rprog').classList.remove('hide');$('lv').style.display='flex';rp(3);
+ try{const ref=await gh(`/repos/${r}/git/ref/heads/${encP(br)}`),parent=ref.object.sha;rp(8);const base=(await gh(`/repos/${r}/git/commits/${parent}`)).tree.sha;rp(14);
   const ents=[],puts=[];PEND.forEach((v,p)=>{if(v.del)ents.push({path:p,mode:'100644',type:'blob',sha:null});else if(v.sha)ents.push({path:p,mode:v.mode,type:'blob',sha:v.sha});else puts.push([p,v.data,v.mode])});
-  const[tree]=await buildEntry(r,puts);const all=ents.concat(tree),tsha=await chainTrees(r,base,all);
+  const[tree]=await buildEntry(r,puts,f=>rp(14+f*36));const tsha=await chainTrees(r,base,ents.concat(tree),f=>rp(50+f*34));
   const msg=$('cmsg').value.trim().slice(0,200)||`Update via Zip2Git (${PEND.size} changes)`;
-  const c=await gh(`/repos/${r}/git/commits`,{method:'POST',body:JSON.stringify({message:msg,tree:tsha,parents:[parent]})});
-  await gh(`/repos/${r}/git/refs/heads/${encP(br)}`,{method:'PATCH',body:JSON.stringify({sha:c.sha,force:false})});
-  $('cmsg').value='';PEND.clear();await loadRepo();const m=el('div','msg ok');m.textContent=T('Changes pushed ✓','बदलाव पुश हो गए ✓');$('m5').appendChild(m)
- }catch(e){const m=el('div','msg');m.textContent=eText(e);$('m5').replaceChildren(m);toast(eText(e),1)}finally{PUSHING=false;awake(false)}}
+  const c=await gh(`/repos/${r}/git/commits`,{method:'POST',body:JSON.stringify({message:msg,tree:tsha,parents:[parent]})});rp(90);
+  await gh(`/repos/${r}/git/refs/heads/${encP(br)}`,{method:'PATCH',body:JSON.stringify({sha:c.sha,force:false})});rp(96);
+  $('cmsg').value='';PEND.clear();await loadRepo();rp(100);$('m5').appendChild(tickMsg(T('Changes pushed','बदलाव पुश हो गए')));toast(T('Push complete ✓','पुश पूरा ✓'))
+ }catch(e){const m=el('div','msg');m.textContent=eText(e);$('m5').replaceChildren(m);toast(eText(e),1)}finally{PUSHING=false;$('lv').style.display='none';awake(false)}}
 async function delRepo(){const r=repoFull();const a=prompt(T('This deletes '+r+' FOREVER. Type the full repo name to confirm:',r+' हमेशा के लिए डिलीट होगी। पक्का करने के लिए पूरा रिपो नाम लिखो:'));if(a===null)return;if(a.trim()!==r)throw new Error(B('Name did not match. Nothing deleted.','नाम मेल नहीं खाया। कुछ डिलीट नहीं हुआ।'));
  await gh('/repos/'+r,{method:'DELETE'});resetRepo();await loadRepos();toast(T('Repo deleted.','रिपो डिलीट हो गई।'))}
 /* ---------- BUILD: workflows ---------- */
@@ -303,7 +305,7 @@ function yml(){const k=$('wk').value,t=$('wt').value||'cap',br=(()=>{try{return 
  const H=(name,trig,perm)=>`name: ${name}\non:\n${trig}permissions:\n${perm}concurrency:\n  group: ${k}-«github.ref»\n  cancel-in-progress: true\ndefaults:\n  run:\n    shell: bash\njobs:\n`;
  const D='  workflow_dispatch:\n',P='  contents: write\n  pages: write\n  id-token: write\n';
  if(k==='android')return X(H('Build Android APK + AAB',D,'  contents: write\n')+androidJob(t));
- if(k==='pages')return X(H('Deploy Website',D+`  push:\n    branches: [${br}]\n`,'  contents: read\n  pages: write\n  id-token: write\n')+pagesJob());
+ if(k==='pages')return X(H('Deploy Website',D+`  push:\n    branches: [${br}]\n    paths-ignore:\n      - '**.md'\n`,'  contents: read\n  pages: write\n  id-token: write\n')+pagesJob());
  return X(H('Build APK + AAB + Pages',D,P)+androidJob(t)+pagesJob())}
 function fillTypes(){const s=$('wt'),old=s.value;s.replaceChildren();TYPES.forEach(([v,e,h])=>{const o=el('option','',HI?h:e);o.value=v;s.appendChild(o)});if(old)s.value=old;showYml()}
 const wf=()=>WFN[$('wk').value];

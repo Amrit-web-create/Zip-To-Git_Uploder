@@ -73,3 +73,8 @@ textarea.ed{min-height:46vh;font-size:13px;white-space:pre;overflow:auto;margin-
 .sc textarea.ed{width:100%}
 .svgh{position:absolute;width:0;height:0}.rowc{display:flex;gap:10px;align-items:center}.rowc14{display:flex;gap:14px;align-items:center}
 .langb{flex:none;padding:11px 16px}.f1{flex:1;min-width:0}.g8{gap:8px}.mb14{margin:0 0 14px}
+
+#off .btn{flex:none;width:auto;padding:9px 20px;font-size:14px;gap:7px}#off .btn .ic{width:18px;height:18px}
+.okrow{display:flex;gap:12px;align-items:center;font-size:16px}
+.tick{width:34px;height:34px;border-radius:50%;background:var(--ok);color:#fff;display:grid;place-items:center;flex:none;animation:pop .35s}
+.tick .ic{width:20px;height:20px;stroke-width:3}@keyframes pop{from{transform:scale(0)}}
