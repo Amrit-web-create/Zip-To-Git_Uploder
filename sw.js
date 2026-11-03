@@ -1,4 +1,4 @@
-const CACHE_NAME='zip-to-git-pwa-v4';
+const CACHE_NAME='zip-to-git-pwa-v5';
 const APP_SHELL=['./','./index.html','./style.css','./app.js','./jszip.min.js','./manifest.json','./offline.html','./offline.css','./offline.js','./offline.jpg','./icons/icon-192.png','./icons/icon-512.png','./icons/icon-512-maskable.png'];
 self.addEventListener('install',e=>{e.waitUntil((async()=>{const c=await caches.open(CACHE_NAME);await c.addAll(APP_SHELL);await self.skipWaiting()})())});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{for(const n of await caches.keys())if(n!==CACHE_NAME)await caches.delete(n);await self.clients.claim()})())});
